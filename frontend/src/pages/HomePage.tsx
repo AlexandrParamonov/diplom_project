@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import BookSection from '../components/BookSection';
 import SearchForm from '../components/SearchForm';
 import type { SearchValues } from '../components/SearchForm';
@@ -14,20 +14,22 @@ const emptySearch: SearchValues = {
 function HomePage() {
   const [search, setSearch] = useState<SearchValues>(emptySearch);
 
-  const featuredBooks = books.filter((book) => book.category === 'featured');
-  const newBooks = books.filter((book) => book.category === 'new');
+  const featuredBooks = useMemo(() => books.filter((book) => book.category === 'featured'), []);
+  const newBooks = useMemo(() => books.filter((book) => book.category === 'new'), []);
 
   const normalizedTitle = search.title.trim().toLowerCase();
   const normalizedAuthor = search.author.trim().toLowerCase();
 
   const hasSearch = Boolean(normalizedTitle || normalizedAuthor);
 
-  const filteredBooks = books.filter((book) => {
+  const filteredBooks = useMemo(() => books.filter((book) => {
     const matchesTitle = book.title.toLowerCase().includes(normalizedTitle);
     const matchesAuthor = book.author.toLowerCase().includes(normalizedAuthor);
 
     return matchesTitle && matchesAuthor;
-  });
+  }),
+    [normalizedAuthor, normalizedTitle],
+  );
 
   return (
     <>
@@ -67,8 +69,7 @@ function HomePage() {
               <h2>По вашему запросу ничего не найдено</h2>
 
               <p>
-                Проверьте правильность названия или попробуйте изменить параметры
-                поиска.
+                Проверьте правильность названия или попробуйте изменить параметры поиска.
               </p>
             </div>
           </section>

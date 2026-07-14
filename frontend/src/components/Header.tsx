@@ -16,17 +16,17 @@ function Header() {
             Главная
           </NavLink>
 
-          <a className="header__link" href="/#books">
+          <Link className="header__link" to="/#books">
             Книги
-          </a>
+          </Link>
 
-          <a className="header__link" href="/#about">
+          <Link className="header__link" to="/#about">
             О нас
-          </a>
+          </Link>
 
-          <a className="header__link" href="/#contacts">
+          <Link className="header__link" to="/#contacts">
             Контакты
-          </a>
+          </Link>
         </nav>
 
         <NavLink className="button button--secondary" to="/login">
