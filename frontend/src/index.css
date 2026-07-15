@@ -542,3 +542,43 @@ img {
 #contacts {
   scroll-margin-top: 100px;
 }
+.header__auth {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 16px;
+}
+
+.header__user {
+  max-width: 220px;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header__loading {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.auth-form__message {
+  margin: 0 0 12px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.auth-form__message--error {
+  border: 1px solid #b33a3a;
+  background: #ffe7e7;
+  color: #8b1f1f;
+}
+
+.button:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
