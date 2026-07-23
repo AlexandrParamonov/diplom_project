@@ -1,7 +1,8 @@
 import type { User } from '../types/user';
+import { API_URL } from './config';
 
-const API_URL =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+// const API_URL =
+//   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 export interface LoginPayload {
   email: string;

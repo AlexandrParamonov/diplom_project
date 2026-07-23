@@ -6,16 +6,22 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SearchUserDto } from './dto/search-user.dto';
-import { User } from './entities/user.entity';
-import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
+import { User, UserRole } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @Controller('admin/users')
+@UseGuards(SessionAuthGuard, RolesGuard)
+@Roles(UserRole.Admin)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

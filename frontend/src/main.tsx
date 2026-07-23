@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import AuthProvider from './context/AuthProvider';
+import ScrollToHash from './components/ScrollToHash';
 
 const rootElement = document.getElementById('root');
 
@@ -14,6 +15,7 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToHash />
       <AuthProvider>
         <App />
       </AuthProvider>

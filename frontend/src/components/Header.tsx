@@ -34,7 +34,11 @@ function Header() {
           <Link className="header__link" to="/#books">
             Книги
           </Link>
-
+          <Link className="header__link" to="/#libraries"
+          >
+              Библиотеки
+          </Link>
+          
           <Link className="header__link" to="/#about">
             О нас
           </Link>

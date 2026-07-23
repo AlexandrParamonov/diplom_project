@@ -30,3 +30,7 @@ npm-debug.log*
 Thumbs.db
 
 cookies.txt
+backend/uploads/
+admin-cookies.txt
+client-cookies.txt
+frontend/.env

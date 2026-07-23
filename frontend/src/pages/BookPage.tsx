@@ -1,22 +1,87 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { books } from '../data/books';
-import NotFoundPage from './NotFoundPage';
+import { getBookById, getBookCoverUrl } from '../api/books';
+import type { Book } from '../types/book';
 
 function BookPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
-  const book = books.find((item) => item.id === Number(id));
+  const [book, setBook] = useState<Book | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!book) {
-    return <NotFoundPage />;
+  useEffect(() => {
+    const loadBook = async () => {
+      const bookId = Number(id);
+
+      if (
+        !Number.isInteger(bookId)
+        || bookId < 1
+      ) {
+        setError(
+          'Некорректный идентификатор книги',
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const loadedBook =
+          await getBookById(bookId);
+
+        setBook(loadedBook);
+      } catch (loadError: unknown) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : 'Не удалось загрузить книгу',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadBook();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <section className="book-details section">
+        <div className="container">
+          <p>Загрузка книги...</p>
+        </div>
+      </section>
+    );
   }
+
+  if (error || !book) {
+    return (
+      <section className="book-details section">
+        <div className="container">
+          <Link className="back-link" to="/">
+            ← Вернуться к каталогу
+          </Link>
+
+          <h1>Книга не найдена</h1>
+
+          <p>
+            {error || 'Запрашиваемая книга отсутствует'}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  const coverUrl = getBookCoverUrl(book.coverImage) ?? '/assets/books.svg';
+
+  const isBookAvailable = book.isAvailable && book.availableCopies > 0;
 
   return (
     <section className="book-details section">
       <div className="container book-details__container">
         <img
           className="book-details__cover"
-          src={book.coverImage}
+          src={coverUrl}
           alt={`Обложка книги «${book.title}»`}
         />
 
@@ -30,19 +95,33 @@ function BookPage() {
           <p>
             <strong>Автор:</strong> {book.author}
           </p>
-
+          {book.year !== null && (
+            <p>
+              <strong>Год издания:</strong> {book.year}
+            </p>
+          )}
           <p>
-            <strong>Год издания:</strong> {book.year}
+            <strong>Библиотека:</strong>{' '}
+            {book.library.name}
           </p>
 
           <p>
-            <strong>Доступна в библиотеках:</strong> {book.availableIn}
+            <strong>Адрес:</strong>{' '}
+            {book.library.address}
           </p>
 
-          <p className="book-details__description">{book.description}</p>
+          <p>
+            <strong>Всего экземпляров:</strong>{' '}
+            {book.totalCopies}
+          </p>
+          <p>
+            <strong>Доступно экземпляров:</strong> {book.availableCopies}
+          </p>
 
-          <button className="button button--primary" type="button">
-            Забронировать
+          <p className="book-details__description">{book.description ?? 'Описание отсутствует'}</p>
+
+          <button className="button button--primary" type="button"  disabled={!isBookAvailable}>
+             {isBookAvailable ? 'Забронировать' : 'Нет доступных экземпляров'}
           </button>
         </div>
       </div>

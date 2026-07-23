@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { getBookCoverUrl } from '../api/books';
 import type { Book } from '../types/book';
 
 interface BookCardProps {
@@ -6,11 +7,12 @@ interface BookCardProps {
 }
 
 function BookCard({ book }: BookCardProps) {
+  const coverUrl = getBookCoverUrl(book.coverImage) ?? '/assets/books.svg';
   return (
     <article className="book-card">
       <img
         className="book-card__cover"
-        src={book.coverImage}
+        src={coverUrl}
         alt={`Обложка книги «${book.title}»`}
       />
 
@@ -20,15 +22,20 @@ function BookCard({ book }: BookCardProps) {
         <p className="book-card__meta">
           <strong>Автор:</strong> {book.author}
         </p>
-
+        {book.year !== null && (
         <p className="book-card__meta">
           <strong>Год:</strong> {book.year}
         </p>
+        )}
+         <p className="book-card__meta">
+          <strong>Библиотека:</strong>{' '}
+          {book.library.name}
+        </p>
 
-        <p className="book-card__description">{book.description}</p>
+        <p className="book-card__description">{book.description ?? 'Описание отсутствует'}</p>
 
         <p className="book-card__availability">
-          Доступна в библиотеках: {book.availableIn}
+          Доступно экземпляров: {book.availableCopies}
         </p>
 
         <Link className="button button--primary book-card__button" to={`/books/${book.id}`}>

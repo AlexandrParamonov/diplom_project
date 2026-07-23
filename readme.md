@@ -44,6 +44,7 @@ Library Aggregator — веб-приложение для поиска и бро
 - class-validator
 - class-transformer
 - bcrypt
+- Multer для загрузки обложек.
 
 ---
 
@@ -58,9 +59,7 @@ library-aggregator
 │   ├── api
 │       ├── components
 │       ├── context
-│       ├── data
 │       ├── hooks
-│       ├── data
 │       ├── pages
 │       └── types
 │
@@ -125,9 +124,7 @@ library-aggregator
 - BookCard
 - BookSection
 
-✔ Добавлены временные данные книг
-
-✔ Реализован поиск по локальному массиву
+✔ Реализован адаптивный интерфейс каталога
 
 ---
 
@@ -158,6 +155,7 @@ library-aggregator
 ✔ Добавлен DTO ответа пользователя
 
 ✔ Поле `passwordHash` скрыто с помощью `class-transformer`
+
 ✔ `passwordHash` не возвращается в API-ответах
 
 ---
@@ -202,11 +200,43 @@ library-aggregator
 
 ✔ API-запросы отправляются с параметром `credentials: 'include'`
 
+## Этап 4. Библиотеки и каталог книг
+
+✔ Создан модуль библиотек и книг;
+
+✔ Добавлены сущности `Library` и `Book`;
+
+✔ Реализовано хранение библиотек и книг в PostgreSQL;
+
+✔ Добавлены публичные маршруты для получения библиотек и книг;
+
+✔ Добавлены административные маршруты для создания библиотек и книг;
+
+✔ Административные маршруты защищены сессионной авторизацией и проверкой роли;
+
+✔ Реализована загрузка обложек книг;
+
+✔ Загруженные файлы доступны по маршруту `/uploads`;
+
+✔ Frontend получает каталог через backend API;
+
+✔ Удалён локальный массив книг `frontend/src/data/books.ts`;
+
+✔ Главная страница динамически загружает книги и библиотеки;
+
+✔ Страница книги загружает данные по идентификатору;
+
+✔ Отображаются общее и доступное количество экземпляров;
+
+✔ Реализован поиск по загруженному каталогу;
+
+✔ Для демонстрации используются тестовые библиотеки города Тулы и тестовый набор книг.
+
 ---
 
 # API пользователей
 
-Пока административные маршруты пользователей не защищены по ролям. Ролевая защита будет добавлена на следующих этапах.
+Административные маршруты пользователей защищены авторизацией и проверкой роли.
 
 ## Создание пользователя
 
@@ -259,59 +289,63 @@ curl http://localhost:3000/api/admin/users/1
 ```
 
 ---
-# API авторизации
+# API библиотек и книг
 
-## Регистрация клиента
+## Получение библиотек
 
 ```http
-POST /api/client/register
+GET /api/common/libraries
+```
+
+## Получение каталога книг
+
+```http
+GET /api/common/books
+```
+
+## Получение одной книги
+
+```http
+GET /api/common/books/:id
+```
+
+## Создание библиотеки
+
+```http
+POST /api/admin/libraries
 ```
 
 Пример тела запроса:
 
 ```json
 {
-  "email": "client@example.com",
-  "password": "123456",
-  "name": "Иванов Иван Иванович",
-  "contactPhone": "+79001112233"
+  "name": "Центральная городская библиотека",
+  "address": "г. Тула, ул. Болдина, д. 149/10",
+  "description": "Главная муниципальная библиотека города"
 }
 ```
 
-Новый пользователь автоматически получает роль `client`.
-
-## Вход
+## Создание книги
 
 ```http
-POST /api/auth/login
+POST /api/admin/books
 ```
 
-Пример тела запроса:
+При создании книги передаются сведения о произведении, идентификатор библиотеки, количество экземпляров и, при необходимости, файл обложки.
 
-```json
-{
-  "email": "client@example.com",
-  "password": "123456"
-}
+Основные поля книги:
+
+```text
+libraryId
+title
+author
+year
+description
+totalCopies
+availableCopies
+isAvailable
+coverImage
 ```
-
-При успешном входе сервер создаёт сессию и устанавливает cookie `library.sid`.
-
-## Получение текущего пользователя
-
-```http
-GET /api/auth/me
-```
-
-Маршрут доступен только авторизованному пользователю.
-
-## Выход
-
-```http
-POST /api/auth/logout
-```
-
-При выходе сессия удаляется, а cookie очищается.
 
 ---
 # Переменные окружения
@@ -446,7 +480,23 @@ Backend:
 ```text
 http://localhost:3000/api
 ```
+Публичный каталог книг:
 
+```text
+http://localhost:3000/api/common/books
+```
+
+Публичный список библиотек:
+
+```text
+http://localhost:3000/api/common/libraries
+```
+
+Загруженные обложки:
+
+```text
+http://localhost:3000/uploads/<имя-файла>
+```
 ---
 
 # Проверка проекта
@@ -468,7 +518,7 @@ npm run test
 docker exec -it library-postgres psql -U postgres -d library
 ```
 
-Посмотреть пользователей:
+##  Пользователи:
 
 ```sql
 select id, email, name, role from users;
@@ -484,6 +534,28 @@ delete from users where id = 1;
 
 ```sql
 truncate table users restart identity cascade;
+```
+## Библиотеки
+
+```sql
+SELECT id, name, address FROM libraries ORDER BY id;
+```
+
+Удаление библиотеки:
+
+```sql
+DELETE FROM libraries WHERE id = 1;
+```
+## Книги
+
+```sql
+SELECT id, title, author, "libraryId", "totalCopies", "availableCopies", "isAvailable" FROM books ORDER BY id;
+```
+
+Изменение количества экземпляров:
+
+```sql
+UPDATE books SET "totalCopies" = 7, "availableCopies" = 7, "isAvailable" = true WHERE id = 1;
 ```
 
 Выйти из psql:
@@ -526,7 +598,6 @@ GET /api/common/books
 - загрузку обложек;
 - замену локального массива книг во frontend на API;
 - защиту административных маршрутов по ролям.
-
 ---
 
 # Автор

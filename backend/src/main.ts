@@ -1,14 +1,25 @@
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
 import passport from 'passport';
 import { AppModule } from './app.module';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+  const uploadsPath = join(process.cwd(), 'uploads');
 
+  mkdirSync(join(uploadsPath, 'covers'), {
+    recursive: true,
+  });
+
+  app.useStaticAssets(uploadsPath, {
+    prefix: '/uploads/',
+  });
   app.setGlobalPrefix('api');
 
   app.enableCors({

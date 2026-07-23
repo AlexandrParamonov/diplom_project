@@ -1,8 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { getBooks } from '../api/books';
+import { getLibraries } from '../api/libraries';
 import BookSection from '../components/BookSection';
 import SearchForm from '../components/SearchForm';
 import type { SearchValues } from '../components/SearchForm';
-import { books } from '../data/books';
+import type { Book } from '../types/book';
+import type { Library } from '../types/library';
+
 
 const emptySearch: SearchValues = {
   title: '',
@@ -12,11 +16,65 @@ const emptySearch: SearchValues = {
 };
 
 function HomePage() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [libraries, setLibraries] = useState<Library[]>([]);
   const [search, setSearch] = useState<SearchValues>(emptySearch);
 
-  const featuredBooks = useMemo(() => books.filter((book) => book.category === 'featured'), []);
-  const newBooks = useMemo(() => books.filter((book) => book.category === 'new'), []);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const [
+          loadedBooks,
+          loadedLibraries,
+        ] = await Promise.all([
+          getBooks({
+            limit: 100,
+          }),
+          getLibraries(),
+        ]);
+
+        setBooks(loadedBooks);
+        setLibraries(loadedLibraries);
+      } catch (error: unknown) {
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : 'Не удалось загрузить каталог',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadCatalog();
+  }, []);
+
+  const featuredBooks = useMemo(() => books.slice(0, 3), [books]);
+  const newBooks = useMemo(() => books.slice(3, 6), [books]);
+  const librariesWithStats = useMemo(
+    () =>
+      libraries.map((library) => {
+        const libraryBooks = books.filter(
+          (book) => book.libraryId === library.id,
+        );
+
+        const availableCopies = libraryBooks.reduce(
+          (total, book) =>
+            total + book.availableCopies,
+          0,
+        );
+
+        return {
+          ...library,
+          booksCount: libraryBooks.length,
+          availableCopies,
+        };
+      }),
+    [books, libraries],
+  );
   const normalizedTitle = search.title.trim().toLowerCase();
   const normalizedAuthor = search.author.trim().toLowerCase();
 
@@ -28,7 +86,7 @@ function HomePage() {
 
     return matchesTitle && matchesAuthor;
   }),
-    [normalizedAuthor, normalizedTitle],
+    [books, normalizedAuthor, normalizedTitle],
   );
 
   return (
@@ -55,31 +113,66 @@ function HomePage() {
           </div>
         </div>
       </section>
+      {isLoading && (
+        <section className="section">
+          <div className="container">
+            <p>Загрузка книг...</p>
+          </div>
+        </section>
+      )}
 
-      {hasSearch ? (
-        filteredBooks.length > 0 ? (
-          <BookSection
-            id="books"
-            title={`Найдено книг: ${filteredBooks.length}`}
-            books={filteredBooks}
-          />
-        ) : (
-          <section className="empty-result section" id="books">
-            <div className="container empty-result__container">
-              <h2>По вашему запросу ничего не найдено</h2>
+      {loadError && (
+        <section className="section">
+          <div className="container">
+            <p className="auth-form__message auth-form__message--error">
+              {loadError}
+            </p>
+          </div>
+        </section>
+      )}
 
-              <p>
-                Проверьте правильность названия или попробуйте изменить параметры поиска.
-              </p>
-            </div>
-          </section>
-        )
-      ) : (
-        <BookSection
-          id="books"
-          title="Выбор редакции"
-          books={featuredBooks}
-        />
+      {!isLoading && !loadError && (
+        <>
+          {hasSearch ? (
+            filteredBooks.length > 0 ? (
+              <BookSection
+                id="books"
+                title={`Найдено книг: ${filteredBooks.length}`}
+                books={filteredBooks}
+              />
+            ) : (
+              <section className="empty-result section" id="books">
+                <div className="container empty-result__container">
+                  <h2>По вашему запросу ничего не найдено</h2>
+
+                  <p>
+                    Проверьте правильность названия или попробуйте изменить параметры поиска.
+                  </p>
+                </div>
+              </section>
+            )
+          ) : featuredBooks.length > 0 ? (
+            <BookSection
+              id="books"
+              title="Выбор редакции"
+              books={featuredBooks}
+            />
+          ) : (
+            <section
+              className="empty-result section"
+              id="books"
+            >
+              <div className="container empty-result__container">
+                <h2>В каталоге пока нет книг</h2>
+
+                <p>
+                  Книги появятся после добавления
+                  администратором.
+                </p>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       <section className="about section" id="about">
@@ -110,34 +203,59 @@ function HomePage() {
         </div>
       </section>
 
-      {!hasSearch && (
-        <BookSection title="Новые поступления" books={newBooks} />
-      )}
+      {isLoading
+        && !loadError
+        && !hasSearch
+        && newBooks.length > 0 && (
+          <BookSection title="Новые поступления" books={newBooks} />
+        )}
 
-      <section className="libraries section">
+      <section className="libraries section" id="libraries">
         <div className="container">
-          <p className="section__eyebrow">Рядом с вами</p>
-          <h2 className="section__title">Популярные библиотеки</h2>
+          <p className="section__eyebrow">
+            Библиотеки каталога
+          </p>
 
-          <div className="library-grid">
-            <article className="library-card">
-              <h3>Библиотека им. Н. А. Некрасова</h3>
-              <p>ул. Бауманская, д. 58/25</p>
-              <span>Доступно более 15 000 книг</span>
-            </article>
+          <h2 className="section__title">
+            Доступные библиотеки
+          </h2>
 
-            <article className="library-card">
-              <h3>Библиотека-читальня им. И. С. Тургенева</h3>
-              <p>Бобров переулок, д. 6</p>
-              <span>Доступно более 10 000 книг</span>
-            </article>
+          {!isLoading
+            && !loadError
+            && librariesWithStats.length > 0 && (
+              <div className="library-grid">
+                {librariesWithStats.map((library) => (
+                  <article
+                    className="library-card"
+                    key={library.id}
+                  >
+                    <h3>{library.name}</h3>
 
-            <article className="library-card">
-              <h3>Центральная детская библиотека</h3>
-              <p>Большая Черкизовская ул., д. 4</p>
-              <span>Доступно более 8 000 книг</span>
-            </article>
-          </div>
+                    <p>{library.address}</p>
+
+                    {library.description && (
+                      <p>{library.description}</p>
+                    )}
+
+                    <span>
+                      Книг в каталоге: {library.booksCount}.
+                      Доступно экземпляров:{' '}
+                      {library.availableCopies}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            )}
+
+          {!isLoading
+            && !loadError
+            && librariesWithStats.length === 0 && (
+              <div className="empty-result__container">
+                <p>
+                  Библиотеки пока не добавлены.
+                </p>
+              </div>
+            )}
         </div>
       </section>
     </>
