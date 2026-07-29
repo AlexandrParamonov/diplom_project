@@ -21,19 +21,21 @@ function AuthProvider({ children }: PropsWithChildren) {
 
   const refreshUser = useCallback(async () => {
     const currentUser = await getCurrentUser();
-
     setUser(currentUser);
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const authenticatedUser = await loginUser(payload);
-
-    setUser(authenticatedUser);
-  }, []);
+  const login = useCallback(
+    async (
+      payload: LoginPayload,
+    ): Promise<User> => {
+      const authenticatedUser =
+        await loginUser(payload);
+      setUser(authenticatedUser);
+      return authenticatedUser;
+    }, []);
 
   const logout = useCallback(async () => {
     await logoutUser();
-
     setUser(null);
   }, []);
 

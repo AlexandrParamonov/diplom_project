@@ -60,20 +60,30 @@ library-aggregator
 │       ├── components
 │       ├── context
 │       ├── hooks
+│       ├── layouts
 │       ├── pages
+│       │   └── admin
 │       └── types
 │
 ├── backend
 │   └── src
 │       ├── auth
-│       │   ├── dto
+│       │   ├── decorators
 │       │   ├── guards
 │       │   ├── interfaces
 │       │   ├── strategies
 │       │   ├── auth.controller.ts
 │       │   ├── auth.module.ts
 │       │   └── auth.service.ts
-|       |
+│       ├── libraries
+│       │   ├── controllers
+│       │   ├── dto
+│       │   ├── entities
+│       │   └── utils
+│       ├── rentals
+│       │   ├── controllers
+│       │   ├── dto
+│       │   └── entities
 │       ├── users
 │       │   ├── dto
 │       │   ├── entities
@@ -83,6 +93,8 @@ library-aggregator
 │       ├── app.module.ts
 │       └── main.ts
 │
+├── uploads/
+│   └── covers/
 ├── docker-compose.yaml
 ├── .env-example
 ├── .gitignore
@@ -232,8 +244,93 @@ library-aggregator
 
 ✔ Для демонстрации используются тестовые библиотеки города Тулы и тестовый набор книг.
 
+## Этап 5. Бронирование книг
+
+✔ Создана сущность BookRental;
+
+✔ Добавлены статусы reserved, active, completed, cancelled;
+
+✔ Создание бронирования выполняется в транзакции;
+
+✔ При бронировании доступное количество уменьшается;
+
+✔ При отмене или завершении экземпляр возвращается;
+
+✔ Нельзя забронировать книгу без доступных экземпляров;
+
+✔ Нельзя создать второе активное бронирование той же книги;
+
+✔ Клиент видит только свои бронирования;
+
+✔ Администратор видит все бронирования;
+
+✔ Реализованы страницы /rentals и /admin/rentals.
+
 ---
 
+# Frontend-маршруты
+
+## Общие страницы
+
+```text
+/
+```
+
+Главная страница и каталог книг.
+
+```text
+/books/:id
+```
+
+Страница книги.
+
+```text
+/login
+```
+
+Страница входа.
+
+```text
+/register
+```
+
+Страница регистрации.
+
+## Маршруты клиента
+
+```text
+/rentals
+```
+
+Страница «Мои бронирования».
+
+## Административные маршруты
+
+```text
+/admin
+```
+
+Главная страница административной панели.
+
+```text
+/admin/libraries
+```
+
+Управление библиотеками.
+
+```text
+/admin/books
+```
+
+Управление книгами.
+
+```text
+/admin/rentals
+```
+
+Управление бронированиями.
+
+---
 # API пользователей
 
 Административные маршруты пользователей защищены авторизацией и проверкой роли.
@@ -348,6 +445,81 @@ coverImage
 ```
 
 ---
+# API бронирований
+
+## Создание бронирования
+
+```http
+POST /api/client/rentals
+```
+
+Пример тела запроса:
+
+```json
+{
+  "bookId": 1,
+  "dateStart": "2026-08-01",
+  "dateEnd": "2026-08-15"
+}
+```
+
+## Получение бронирований клиента
+
+```http
+GET /api/client/rentals
+```
+
+## Получение одного бронирования клиента
+
+```http
+GET /api/client/rentals/:id
+```
+
+## Отмена бронирования клиентом
+
+```http
+PATCH /api/client/rentals/:id/cancel
+```
+
+Отменить можно только бронирование со статусом `reserved`.
+
+## Получение всех бронирований
+
+```http
+GET /api/admin/rentals
+```
+
+Доступные query-параметры:
+
+- status;
+- userId;
+- bookId;
+- libraryId;
+- limit;
+- offset.
+
+## Получение одного бронирования
+
+```http
+GET /api/admin/rentals/:id
+```
+
+## Изменение статуса бронирования
+
+```http
+PATCH /api/admin/rentals/:id/status
+```
+
+Пример тела запроса:
+
+```json
+{
+  "status": "active"
+}
+```
+
+---
+
 # Переменные окружения
 
 В корне проекта нужно создать файл `.env` на основе `.env-example`.
@@ -508,7 +680,15 @@ npm run build
 npm run lint
 npm run test
 ```
+На текущем этапе:
 
+✔ Frontend успешно собирается через TypeScript и Vite.
+
+✔ Backend успешно собирается через Nest CLI.
+
+✔ ESLint проверяет frontend и backend.
+
+✔ Backend-тесты запускаются через Jest.
 ---
 # Работа с PostgreSQL вручную
 
@@ -558,6 +738,20 @@ SELECT id, title, author, "libraryId", "totalCopies", "availableCopies", "isAvai
 UPDATE books SET "totalCopies" = 7, "availableCopies" = 7, "isAvailable" = true WHERE id = 1;
 ```
 
+## Бронирования
+
+```sql
+SELECT
+  id,
+  "userId",
+  "bookId",
+  "libraryId",
+  "dateStart",
+  "dateEnd",
+  status
+FROM book_rentals
+ORDER BY id;
+```
 Выйти из psql:
 
 ```sql
@@ -566,38 +760,22 @@ UPDATE books SET "totalCopies" = 7, "availableCopies" = 7, "isAvailable" = true 
 
 ---
 
-# Текущее ограничение
-
-Книги во frontend пока загружаются из локального массива:
-
-```text
-frontend/src/data/books.ts
-```
-
-После реализации модулей библиотек и книг локальный массив будет заменён запросами к API:
-
-```http
-GET /api/common/books
-```
-
----
-
 # Следующий этап
 
-Модуль библиотек и книг.
+Чат технической поддержки.
 
 Нужно реализовать:
 
-- сущность библиотеки `Library`;
-- сущность книги `Book`;
-- создание библиотек;
-- создание книг;
-- получение списка книг;
-- поиск книг по названию и автору;
-- получение информации о конкретной книге;
-- загрузку обложек;
-- замену локального массива книг во frontend на API;
-- защиту административных маршрутов по ролям.
+- создание обращения клиентом;
+- хранение истории сообщений;
+- отправку сообщений клиентом;
+- отправку сообщений администратором или менеджером;
+- статусы обращения;
+- хранение переписки в PostgreSQL;
+- обмен сообщениями в реальном времени;
+- страницу клиента `/support`;
+- страницу администратора `/admin/support`.
+
 ---
 
 # Автор

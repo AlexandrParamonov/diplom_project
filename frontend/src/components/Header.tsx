@@ -13,6 +13,14 @@ function Header() {
     isActive
       ? 'header__link header__link--active'
       : 'header__link';
+  const getAdminLinkClass = ({
+    isActive,
+  }: {
+    isActive: boolean;
+  }) =>
+    isActive
+      ? 'header__admin-link header__admin-link--active'
+      : 'header__admin-link';
 
   const handleLogout = async () => {
     await logout();
@@ -22,7 +30,7 @@ function Header() {
   return (
     <header className="header">
       <div className="container header__container">
-        <Link className="logo" to="/">
+        <Link className="logo header__logo" to="/">
           КнигоПоиск
         </Link>
 
@@ -34,11 +42,10 @@ function Header() {
           <Link className="header__link" to="/#books">
             Книги
           </Link>
-          <Link className="header__link" to="/#libraries"
-          >
-              Библиотеки
+          <Link className="header__link" to="/#libraries">
+            Библиотеки
           </Link>
-          
+
           <Link className="header__link" to="/#about">
             О нас
           </Link>
@@ -46,6 +53,23 @@ function Header() {
           <Link className="header__link" to="/#contacts">
             Контакты
           </Link>
+          {user?.role === 'client' && (
+            <NavLink
+              className={getLinkClass}
+              to="/rentals"
+            >
+              Мои бронирования
+            </NavLink>
+          )}
+          
+          {user?.role === 'admin' && (
+            <NavLink
+              className={getAdminLinkClass}
+              to="/admin"
+            >
+              Панель администрирования
+            </NavLink>
+          )}
         </nav>
 
         <div className="header__auth">
@@ -55,12 +79,22 @@ function Header() {
             </span>
           ) : user ? (
             <>
-              <span className="header__user">
-                {user.name}
-              </span>
+              <div className="header__profile">
+                <span className="header__user">
+                  {user.name}
+                </span>
+
+                <span className="header__role">
+                  {user.role === 'admin'
+                    ? 'Администратор'
+                    : user.role === 'manager'
+                      ? 'Менеджер'
+                      : 'Читатель'}
+                </span>
+              </div>
 
               <button
-                className="button button--secondary"
+                className="button button--secondary header__logout"
                 type="button"
                 onClick={() => {
                   void handleLogout();

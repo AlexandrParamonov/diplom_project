@@ -94,7 +94,7 @@ function HomePage() {
       <section className="hero">
         <div className="container hero__container">
           <div className="hero__content">
-            <p className="hero__eyebrow">Библиотеки Москвы в одном сервисе</p>
+            <p className="hero__eyebrow">Библиотеки Тулы в одном сервисе</p>
 
             <h1 className="hero__title">
               Найдите и забронируйте нужную книгу
@@ -203,7 +203,7 @@ function HomePage() {
         </div>
       </section>
 
-      {isLoading
+      {!isLoading
         && !loadError
         && !hasSearch
         && newBooks.length > 0 && (

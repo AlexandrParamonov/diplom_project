@@ -20,14 +20,13 @@ function LoginPage() {
   const [form, setForm] = useState<LoginForm>(initialForm);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const submit = async () => {
     setError('');
     setIsSubmitting(true);
 
     try {
       await login(form);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (submitError: unknown) {
       setError(
         submitError instanceof Error
@@ -41,7 +40,6 @@ function LoginPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     void submit();
   };
 
