@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { LibrariesModule } from './libraries/libraries.module';
 import { RentalsModule } from './rentals/rentals.module';
+import { SupportModule } from './support/support.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     LibrariesModule,
     RentalsModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

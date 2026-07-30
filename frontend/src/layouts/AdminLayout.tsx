@@ -32,15 +32,25 @@ function AdminLayout() {
             </NavLink>
             <NavLink
               className={getLinkClass}
-              to="/admin/libraries"
-            >
+              to="/admin/libraries" >
               Библиотеки
             </NavLink>
             <NavLink
               className={getLinkClass}
-              to="/admin/books"
-            >
+              to="/admin/books" >
               Книги
+            </NavLink>
+            <NavLink
+              className={getLinkClass}
+              to="/admin/rentals"
+            >
+              Бронирования
+            </NavLink>
+            <NavLink
+              className={getLinkClass}
+              to="/admin/support"
+            >
+              Поддержка
             </NavLink>
           </nav>
         </div>

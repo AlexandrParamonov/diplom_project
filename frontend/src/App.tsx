@@ -8,12 +8,14 @@ import AdminBooksPage from './pages/admin/AdminBooksPage';
 import AdminLibrariesPage from './pages/admin/AdminLibrariesPage';
 import AdminPage from './pages/admin/AdminPage';
 import AdminRentalsPage from './pages/admin/AdminRentalsPage';
+import AdminSupportPage from './pages/admin/AdminSupportPage';
 import BookPage from './pages/BookPage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import MyRentalsPage from './pages/MyRentalsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import RegisterPage from './pages/RegisterPage';
+import SupportPage from './pages/SupportPage';
 
 function App() {
   return (
@@ -27,17 +29,19 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ClientRoute />}>
-          <Route path="/rentals" element={<MyRentalsPage />} />
+            <Route path="/rentals" element={<MyRentalsPage />} />
+            <Route path="/support" element={<SupportPage />} />
           </Route>
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />} >
               <Route index element={<AdminPage />} />
-              <Route path="libraries" element={ <AdminLibrariesPage />} />
+              <Route path="libraries" element={<AdminLibrariesPage />} />
               <Route path="books" element={<AdminBooksPage />} />
-              <Route path="rentals" element={ <AdminRentalsPage />} />
+              <Route path="rentals" element={<AdminRentalsPage />} />
+              <Route path="support" element={<AdminSupportPage />} />
+              </Route>
             </Route>
-          </Route>
-          <Route path="*" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
 

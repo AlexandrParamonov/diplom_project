@@ -5,7 +5,7 @@ import App from './App';
 import './index.css';
 import AuthProvider from './context/AuthProvider';
 import ScrollToHash from './components/ScrollToHash';
-
+import './support.css';
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {

@@ -56,6 +56,19 @@ function AdminPage() {
       </article>
 
       <article className="admin-card">
+        <h2>Поддержка</h2>
+        <p>
+          Обращения пользователей,
+          ответы и изменение статусов.
+        </p>
+        <Link
+          className="button button--primary"
+          to="/admin/support"
+        >
+          Открыть обращения
+        </Link>
+      </article>
+      <article className="admin-card">
         <h2>Текущий администратор</h2>
 
         <p>{user?.name}</p>

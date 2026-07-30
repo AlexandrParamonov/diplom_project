@@ -35,7 +35,15 @@ function Header() {
         </Link>
 
         <nav className="header__navigation" aria-label="Основная навигация">
-          <NavLink className={getLinkClass} to="/" end>
+          <NavLink className={getLinkClass} to="/" end
+            onClick={() => {
+              requestAnimationFrame(() => {
+                window.scrollTo({
+                  top: 0,
+                  behavior: 'smooth',
+                });
+              });
+            }}>
             Главная
           </NavLink>
 
@@ -54,14 +62,22 @@ function Header() {
             Контакты
           </Link>
           {user?.role === 'client' && (
-            <NavLink
-              className={getLinkClass}
-              to="/rentals"
-            >
-              Мои бронирования
-            </NavLink>
+            <>
+              <NavLink
+                className={getLinkClass}
+                to="/rentals"
+              >
+                Мои бронирования
+              </NavLink>
+              <NavLink
+                className={getLinkClass}
+                to="/support"
+              >
+                Поддержка
+              </NavLink>
+            </>
           )}
-          
+
           {user?.role === 'admin' && (
             <NavLink
               className={getAdminLinkClass}

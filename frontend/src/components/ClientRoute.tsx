@@ -35,9 +35,8 @@ function ClientRoute() {
       <section className="admin-access section">
         <div className="container admin-access__container">
           <h1>Недостаточно прав</h1>
-
           <p>
-            Раздел бронирований доступен
+            Этот раздел доступен
             пользователям с ролью client.
           </p>
         </div>

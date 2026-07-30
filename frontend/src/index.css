@@ -302,7 +302,9 @@ img {
 }
 
 .book-card__description {
+  max-height: 120px;
   margin: 12px 0;
+  overflow: hidden;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
